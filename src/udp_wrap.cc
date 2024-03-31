@@ -766,7 +766,11 @@ void UDPWrap::OnRecv(ssize_t nread,
     bs = ArrayBuffer::NewBackingStore(isolate, 0);
   } else {
     CHECK_LE(static_cast<size_t>(nread), bs->ByteLength());
-    bs = BackingStore::Reallocate(isolate, std::move(bs), nread);
+    std::unique_ptr<BackingStore> old_bs = std::move(bs);
+    bs = ArrayBuffer::NewBackingStore(isolate, nread);
+    memcpy(static_cast<char*>(bs->Data()),
+           static_cast<char*>(old_bs->Data()),
+           nread);
   }
 
   Local<Object> address;

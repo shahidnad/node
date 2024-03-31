@@ -679,9 +679,14 @@ void EmitToJSStreamListener::OnStreamRead(ssize_t nread, const uv_buf_t& buf_) {
   }
 
   CHECK_LE(static_cast<size_t>(nread), bs->ByteLength());
-  bs = BackingStore::Reallocate(isolate, std::move(bs), nread);
+  std::unique_ptr<BackingStore> new_bs =
+      ArrayBuffer::NewBackingStore(isolate, nread);
+  memcpy(static_cast<char*>(new_bs->Data()),
+         static_cast<char*>(bs->Data()),
+         nread);
 
-  stream->CallJSOnreadMethod(nread, ArrayBuffer::New(isolate, std::move(bs)));
+  stream->CallJSOnreadMethod(nread,
+                             ArrayBuffer::New(isolate, std::move(new_bs)));
 }
 
 
