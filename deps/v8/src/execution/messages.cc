@@ -9,7 +9,6 @@
 #include "src/api/api-inl.h"
 #include "src/ast/ast.h"
 #include "src/ast/prettyprinter.h"
-#include "src/base/v8-fallthrough.h"
 #include "src/execution/execution.h"
 #include "src/execution/frames-inl.h"
 #include "src/execution/frames.h"
@@ -175,8 +174,8 @@ void MessageHandler::ReportMessageNoExceptions(
       if (!(message_levels & error_level)) {
         continue;
       }
-      v8::MessageCallback callback =
-          FUNCTION_CAST<v8::MessageCallback>(callback_obj->foreign_address());
+      v8::MessageCallback callback = FUNCTION_CAST<v8::MessageCallback>(
+          callback_obj->foreign_address<kGenericForeignTag>());
       Handle<Object> callback_data(listener->get(1), isolate);
       {
         RCS_SCOPE(isolate, RuntimeCallCounterId::kMessageListenerCallback);

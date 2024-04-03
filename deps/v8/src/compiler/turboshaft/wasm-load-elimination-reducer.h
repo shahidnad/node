@@ -224,7 +224,7 @@ class WasmMemoryContentTable
 
   OpIndex FindImpl(OpIndex object, int offset, uint32_t type_index,
                    uint8_t size, bool mutability,
-                   OptionalOpIndex index = OptionalOpIndex::Invalid()) {
+                   OptionalOpIndex index = OptionalOpIndex::Nullopt()) {
     WasmMemoryAddress mem{object, offset, type_index, size, mutability};
     auto key = all_keys_.find(mem);
     if (key == all_keys_.end()) return OpIndex::Invalid();
@@ -496,7 +496,7 @@ class WasmLoadEliminationAnalyzer {
 template <class Next>
 class WasmLoadEliminationReducer : public Next {
  public:
-  TURBOSHAFT_REDUCER_BOILERPLATE()
+  TURBOSHAFT_REDUCER_BOILERPLATE(WasmLoadElimination)
 
   void Analyze() {
     if (v8_flags.turboshaft_wasm_load_elimination) {

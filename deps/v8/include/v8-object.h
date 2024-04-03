@@ -146,18 +146,20 @@ enum PropertyAttribute {
 };
 
 /**
- * Accessor[Getter|Setter] are used as callback functions when
- * setting|getting a particular property. See Object and ObjectTemplate's
- * method SetAccessor.
+ * Accessor[Getter|Setter] are used as callback functions when setting|getting
+ * a particular data property. See Object::SetNativeDataProperty and
+ * ObjectTemplate::SetNativeDataProperty methods.
  */
-using AccessorGetterCallback =
+using AccessorGetterCallback V8_DEPRECATE_SOON(
+    "Use AccessorNameGetterCallback signature instead") =
     void (*)(Local<String> property, const PropertyCallbackInfo<Value>& info);
 using AccessorNameGetterCallback =
     void (*)(Local<Name> property, const PropertyCallbackInfo<Value>& info);
 
-using AccessorSetterCallback = void (*)(Local<String> property,
-                                        Local<Value> value,
-                                        const PropertyCallbackInfo<void>& info);
+using AccessorSetterCallback V8_DEPRECATE_SOON(
+    "Use AccessorNameSetterCallback signature instead") =
+    void (*)(Local<String> property, Local<Value> value,
+             const PropertyCallbackInfo<void>& info);
 using AccessorNameSetterCallback =
     void (*)(Local<Name> property, Local<Value> value,
              const PropertyCallbackInfo<void>& info);
@@ -747,7 +749,8 @@ Local<Data> Object::GetInternalField(int index) {
   // know where to find the internal fields and can return the value directly.
   int instance_type = I::GetInstanceType(obj);
   if (I::CanHaveInternalField(instance_type)) {
-    int offset = I::kJSObjectHeaderSize + (I::kEmbedderDataSlotSize * index);
+    int offset = I::kJSAPIObjectWithEmbedderSlotsHeaderSize +
+                 (I::kEmbedderDataSlotSize * index);
     A value = I::ReadRawField<A>(obj, offset);
 #ifdef V8_COMPRESS_POINTERS
     // We read the full pointer value and then decompress it in order to avoid
@@ -773,7 +776,8 @@ void* Object::GetAlignedPointerFromInternalField(v8::Isolate* isolate,
   // know where to find the internal fields and can return the value directly.
   auto instance_type = I::GetInstanceType(obj);
   if (V8_LIKELY(I::CanHaveInternalField(instance_type))) {
-    int offset = I::kJSObjectHeaderSize + (I::kEmbedderDataSlotSize * index) +
+    int offset = I::kJSAPIObjectWithEmbedderSlotsHeaderSize +
+                 (I::kEmbedderDataSlotSize * index) +
                  I::kEmbedderDataSlotExternalPointerOffset;
     A value =
         I::ReadExternalPointerField<internal::kEmbedderDataSlotPayloadTag>(
@@ -793,7 +797,8 @@ void* Object::GetAlignedPointerFromInternalField(int index) {
   // know where to find the internal fields and can return the value directly.
   auto instance_type = I::GetInstanceType(obj);
   if (V8_LIKELY(I::CanHaveInternalField(instance_type))) {
-    int offset = I::kJSObjectHeaderSize + (I::kEmbedderDataSlotSize * index) +
+    int offset = I::kJSAPIObjectWithEmbedderSlotsHeaderSize +
+                 (I::kEmbedderDataSlotSize * index) +
                  I::kEmbedderDataSlotExternalPointerOffset;
     Isolate* isolate = I::GetIsolateForSandbox(obj);
     A value =
